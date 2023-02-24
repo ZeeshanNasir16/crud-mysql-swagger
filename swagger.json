@@ -1,0 +1,239 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "version": "1.0.0",
+    "title": "Employees-CRUD-REST-API",
+    "description": "A minimal and easy to follow of what you need to create a CRUD style API in ExpressJS using TypeScript and MySql"
+  },
+  "servers": [
+    {
+      "url": "http://localhost:5005/",
+      "description": "Local Dev"
+    }
+  ],
+  "tags": [
+    {
+      "name": "Employees",
+      "description": "API for employees in the system"
+    }
+  ],
+  "consumes": ["application/json"],
+  "produces": ["application/json"],
+  "paths": {
+    "/api/employees": {
+      "get": {
+        "tags": ["Employees"],
+        "summary": "Get all employees in system",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "type": "array",
+              "$ref": "#/components/schemas/Employee_Res"
+            }
+          },
+          "500": {
+            "description": "SERVER ERROR"
+          }
+        }
+      },
+      "post": {
+        "tags": ["Employees"],
+        "summary": "Create a new employee in system",
+        "requestBody": {
+          "description": "Employee Object",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "$ref": "#/components/schemas/Employee_Req"
+              }
+            }
+          }
+        },
+        "produces": ["application/json"],
+        "responses": {
+          "201": {
+            "description": "New Employee Created"
+          },
+          "400": {
+            "description": "Failed. Bad post data."
+          },
+          "500": {
+            "description": "Server Error"
+          }
+        }
+      }
+    },
+    "/api/employees/{id}": {
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "description": "ID of the employee that we want to match",
+          "type": "string"
+        }
+      ],
+      "get": {
+        "tags": ["Employees"],
+        "summary": "Get employee with given ID",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "description": "Employee with id",
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/components/schemas/Employee_Res"
+            }
+          },
+          "400": {
+            "description": "Failed. Employee Id not valid"
+          },
+          "404": {
+            "description": "Failed. Employee not found."
+          }
+        }
+      },
+      "patch": {
+        "summary": "Update employee with given ID",
+        "tags": ["Employees"],
+        "requestBody": {
+          "description": "Employee Object",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Employee_Req"
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "description": "Employee with new values of properties",
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Failed. Bad post data."
+          },
+          "404": {
+            "description": "Failed. Employee not found."
+          }
+        }
+      },
+      "delete": {
+        "summary": "Delete employee with given ID",
+        "tags": ["Employees"],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "description": "Delete employee with id"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Failed. Employee Id not valid"
+          },
+          "404": {
+            "description": "Failed. employee not found."
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Employee_Req": {
+        "type": "object",
+        "properties": {
+          "fullname": {
+            "type": "string",
+            "example": "James"
+          },
+          "email": {
+            "type": "string",
+            "example": "john@email.com"
+          },
+          "password": {
+            "type": "string",
+            "example": "password124"
+          },
+          "salary": {
+            "type": "integer",
+            "format": "int64",
+            "example": 15000
+          },
+          "role": {
+            "type": "string",
+            "example": "user"
+          },
+          "address": {
+            "type": "string",
+            "example": "abc, xyz"
+          }
+        },
+        "xml": {
+          "name": "emp"
+        }
+      },
+      "Employee_Res": {
+        "type": "object",
+        "properties": {
+          "emp_id": {
+            "type": "integer"
+          },
+          "fullname": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "password": {
+            "type": "string"
+          },
+          "open_password": {
+            "type": "string"
+          },
+          "salary": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "role": {
+            "type": "string"
+          },
+          "address": {
+            "type": "string"
+          },
+          "createdAt": {
+            "type": "date"
+          }
+        },
+        "xml": {
+          "name": "emp"
+        }
+      }
+    }
+  }
+}
