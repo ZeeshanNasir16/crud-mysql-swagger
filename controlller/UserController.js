@@ -3,6 +3,7 @@ import catchAsync from '../utils/catchAsync.js';
 import HttpException from '../utils/httpException.js';
 import logger from '../utils/logger.js';
 import { HTTPCodes } from '../utils/responses.js';
+import transporter from '../utils/SendMail.js';
 
 const UserController = {
   getAll: catchAsync(async (_, res, next) => {
@@ -38,6 +39,8 @@ const UserController = {
 
     if (result.affectedRows === 1) {
       logger.info(`Record Inserted Successfully`);
+      // Send email
+      transporter();
       return res.status(HTTPCodes.CREATED).json({
         status: 'success',
         message: 'Record Inserted Successfully',
