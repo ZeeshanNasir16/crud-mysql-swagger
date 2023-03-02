@@ -40,7 +40,7 @@ const UserController = {
     if (result.affectedRows === 1) {
       logger.info(`Record Inserted Successfully`);
       // Send email
-      transporter();
+      transporter(req.body.email);
       return res.status(HTTPCodes.CREATED).json({
         status: 'success',
         message: 'Record Inserted Successfully',

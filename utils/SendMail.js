@@ -1,7 +1,7 @@
 import nodemailer from 'nodemailer';
 import logger from './logger.js';
 
-export default function SendMail() {
+export default function SendMail(email) {
   const transporter = nodemailer.createTransport({
     host: process.env.NM_HOST,
     port: process.env.NM_PORT,
@@ -13,7 +13,7 @@ export default function SendMail() {
 
   var mailOptions = {
     from: '"Employees-CRUD (sample)" <testingmail@example.app>',
-    to: 'resourcestack1@gmail.com',
+    to: email,
     subject: 'Nice Nodemailer test',
     text: 'Hey there, it’s our first message sent with Nodemailer 😉 ',
     html: "<b>Hey there! </b><br> You've been registered with us.",
