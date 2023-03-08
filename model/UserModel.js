@@ -1,6 +1,5 @@
 import QueryDB from '../utils/dbConfig.js';
 import bcrypt from 'bcrypt';
-import logger from '../utils/logger.js';
 
 export const UserModel = {
   getAll: () => QueryDB('Select * from employees'),
@@ -28,14 +27,6 @@ export const UserModel = {
     queryParams.push(id);
     return QueryDB(query, queryParams);
   },
+
   delete: (id) => QueryDB('Delete from employees where emp_id = ?', [id]),
-  login: (email) => QueryDB('Select * from emps where email = ?', [email]),
-  signup: async (vals) => {
-    const open_password = await bcrypt.hash(vals.password, 10);
-    const { email, fullname, password, cnic } = vals;
-    return QueryDB(
-      'Insert into emps (fullname, email, password, cnic) values(?,?,?,?)',
-      [fullname, email, open_password, cnic]
-    );
-  },
 };

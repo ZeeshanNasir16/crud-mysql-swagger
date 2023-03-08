@@ -1,5 +1,4 @@
 import mysql from 'mysql2/promise';
-import logger from './logger.js';
 
 const options = {
   host: process.env.HOST,

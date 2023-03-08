@@ -17,20 +17,3 @@ export const updateEmpSchema = Joi.object({
   role: Joi.string().min(3),
   address: Joi.string(),
 });
-
-export const loginSchema = Joi.object({
-  email: Joi.string().email().required(),
-  password: Joi.string().min(8).required(),
-});
-
-export const signUpSchema = Joi.object({
-  email: Joi.string().email().required(),
-  password: Joi.string().min(8).required(),
-  passwordConfirm: Joi.any()
-    .equal(Joi.ref('password'))
-    .required()
-    .label('Confirm password')
-    .messages({ 'any.only': '{{#label}} does not match' }),
-  fullname: Joi.string().max(60).required(),
-  cnic: Joi.number(),
-});
