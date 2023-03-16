@@ -1,7 +1,7 @@
 import nodemailer from 'nodemailer';
 import logger from './logger.js';
 
-export default function SendMail(email) {
+export default function SendMail(email, subject, htmlMessage) {
   const transporter = nodemailer.createTransport({
     host: process.env.NM_HOST,
     port: process.env.NM_PORT,

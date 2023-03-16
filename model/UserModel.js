@@ -4,7 +4,7 @@ import logger from '../utils/logger.js';
 
 export const UserModel = {
   getAll: () => QueryDB('Select * from employees'),
-  getById: (id) => QueryDB('Select * from employees where emp_id = ?', [id]),
+  getById: (id) => QueryDB('Select * from emps where id = ?', [id]),
   create: async (vals) => {
     const open_password = await bcrypt.hash(vals.password, 10);
     return QueryDB(

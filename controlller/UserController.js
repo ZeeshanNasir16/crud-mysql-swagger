@@ -6,10 +6,16 @@ import { HTTPCodes } from '../utils/responses.js';
 import transporter from '../utils/SendMail.js';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
+import CryptoJS from 'crypto-js';
 
-const signToken = (id) => {
-  return jwt.sign({ id }, process.env.JWT_SECRET, {
-    expiresIn: process.env.JWT_EXPIRES_IN,
+const signToken = async (id) => {
+  const encryptData = CryptoJS.AES.encrypt(
+    `${id}`,
+    process.env.JWT_SECRET
+  ).toString();
+
+  return jwt.sign({ data: encryptData }, process.env.JWT_SECRET, {
+    expiresIn: '2h',
   });
 };
 
@@ -87,20 +93,38 @@ const UserController = {
       new HttpException(HTTPCodes.SERVER_ERROR, "Couldn't delete employee.")
     );
   }),
+  getMe: catchAsync(async (req, res, next) => {
+    logger.info(`User Id : ${req.id}`);
+    const user = await UserModel.getById(req.id);
+    console.table('user', user);
+
+    if (!user)
+      return res.status(HTTPCodes.NOT_FOUND).json({
+        status: 'not found',
+        message: 'User associated with this token does not exists',
+      });
+
+    res.status(HTTPCodes.OK).json({
+      status: 'successs',
+      user,
+    });
+  }),
   login: catchAsync(async (req, res, next) => {
-    const [result] = await UserModel.login(req.body.email);
-    console.log(result);
-    if (!result) {
+    const [emp] = await UserModel.login(req.body.email);
+
+    if (!emp || emp.length === 0) {
       return res.status(HTTPCodes.NOT_FOUND).json({
         status: 'success',
         message: 'User not found with this email.',
       });
     }
-    const chk_password = bcrypt.compareSync(req.body.password, result.password);
+
+    const chk_password = bcrypt.compareSync(req.body.password, emp.password);
 
     if (chk_password) {
-      const token = signToken(result.id);
+      const token = await signToken(emp.id);
       res.set('Authorization', `Bearer ${token}`);
+      res.set('Access-Control-Expose-Headers', 'Authorization');
       return res.status(HTTPCodes.OK).json({
         status: 'success',
         message: 'User Logged In',
@@ -120,6 +144,7 @@ const UserController = {
       // Send email
       transporter(req.body.email);
       const token = signToken(result.id);
+      res.set('Access-Control-Expose-Headers', 'Authorization');
       res.set('Authorization', `Bearer ${token}`);
       return res.status(HTTPCodes.CREATED).json({
         status: 'success',
