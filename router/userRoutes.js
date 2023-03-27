@@ -6,6 +6,8 @@ import {
   updateEmpSchema,
   loginSchema,
   signUpSchema,
+  forgotPassword,
+  resetPassword,
 } from '../validations/userValidations.js';
 
 const UserRouter = express.Router();
@@ -34,6 +36,16 @@ UserRouter.post(
   '/signup',
   validationMiddleware(signUpSchema),
   UserController.signup
+);
+UserRouter.post(
+  '/forgotPassword/',
+  validationMiddleware(forgotPassword),
+  UserController.forgotPassword
+);
+UserRouter.patch(
+  '/resetpassword/:token',
+  validationMiddleware(resetPassword),
+  UserController.resetPassword
 );
 
 export default UserRouter;

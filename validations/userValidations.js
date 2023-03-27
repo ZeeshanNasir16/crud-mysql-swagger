@@ -34,3 +34,16 @@ export const signUpSchema = Joi.object({
   fullname: Joi.string().max(60).required(),
   cnic: Joi.number(),
 });
+
+export const forgotPassword = Joi.object({
+  email: Joi.string().email().required(),
+});
+
+export const resetPassword = Joi.object({
+  password: Joi.string().min(8).required(),
+  passwordConfirm: Joi.any()
+    .equal(Joi.ref('password'))
+    .required()
+    .label('Confirm password')
+    .messages({ 'any.only': '{{#label}} does not match' }),
+});

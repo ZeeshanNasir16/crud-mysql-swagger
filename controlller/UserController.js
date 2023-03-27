@@ -3,9 +3,13 @@ import catchAsync from '../utils/catchAsync.js';
 import HttpException from '../utils/httpException.js';
 import logger from '../utils/logger.js';
 import { HTTPCodes } from '../utils/responses.js';
-import transporter from '../utils/SendMail.js';
+
 import bcrypt from 'bcrypt';
+import crypto from 'crypto';
+
 import jwt from 'jsonwebtoken';
+import SendMail from '../utils/SendMail.js';
+import genPassResetToken from '../utils/genPassResetToken.js';
 
 const signToken = (id) => {
   return jwt.sign({ id }, process.env.JWT_SECRET, {
@@ -48,7 +52,7 @@ const UserController = {
     if (result.affectedRows === 1) {
       logger.info(`Record Inserted Successfully`);
       // Send email
-      transporter(req.body.email);
+      SendMail(req.body.email);
       return res.status(HTTPCodes.CREATED).json({
         status: 'success',
         message: 'Record Inserted Successfully',
@@ -89,7 +93,6 @@ const UserController = {
   }),
   login: catchAsync(async (req, res, next) => {
     const [result] = await UserModel.login(req.body.email);
-    console.log(result);
     if (!result) {
       return res.status(HTTPCodes.NOT_FOUND).json({
         status: 'success',
@@ -114,11 +117,11 @@ const UserController = {
   }),
   signup: catchAsync(async (req, res, next) => {
     const result = await UserModel.signup(req.body);
-    console.log(result);
     if (result.affectedRows === 1) {
       logger.info(`Record Inserted Successfully`);
       // Send email
-      transporter(req.body.email);
+      SendMail(req.body.email);
+
       const token = signToken(result.id);
       res.set('Authorization', `Bearer ${token}`);
       return res.status(HTTPCodes.CREATED).json({
@@ -130,6 +133,91 @@ const UserController = {
       new HttpException(HTTPCodes.SERVER_ERROR, "Couldn't add employee.")
     );
   }),
+  resetPassword: catchAsync(async (req, res, next) => {
+    const { token } = req.params;
+    const hashedToken = crypto.createHash('sha256').update(token).digest('hex');
+    logger.info(hashedToken);
+
+    const [result] = await UserModel.filterByField(
+      'passResetToken',
+      hashedToken
+    );
+
+    if (!result)
+      return res.status(HTTPCodes.NOT_FOUND).json({
+        status: 'not found',
+        message: 'Reset Password Link Invalid or Expired !',
+      });
+
+    const { password } = req.body;
+
+    const updResult = await UserModel.update(
+      { password, passResetToken: null, passResetTokenExp: null },
+      25
+    );
+
+    if (!updResult)
+      return res.status(HTTPCodes.SERVER_ERROR).json({
+        status: 'failed',
+        message: 'Something went wrong',
+      });
+
+    return res.status(HTTPCodes.OK).json({
+      status: 'success',
+      message: 'Your password is updated successfully!',
+    });
+  }),
+
+  forgotPassword: async (req, res, next) => {
+    logger.info('FOrgot Password');
+
+    const [result] = await UserModel.login(req.body.email);
+    if (!result)
+      return res.status(HTTPCodes.NOT_FOUND).json({
+        status: 'not found',
+        message: 'User with this email does not exists.',
+      });
+
+    const { resetToken, passResetToken, passResetTokenExp } =
+      genPassResetToken();
+
+    const passResTokRes = await UserModel.setDBFields(
+      {
+        passResetToken: passResetToken,
+        // passResetTokenExp,
+      },
+      result.id
+    );
+
+    if (!passResTokRes.affectedRows === 1)
+      return res.status(HTTPCodes.SERVER_ERROR).json({
+        status: 'failed',
+        message: 'Something went wrong with server',
+      });
+
+    let resetURL = `${
+      req.headers.origin || 'http://loclhost:3000'
+    }/resetPassword/${resetToken}`;
+
+    const message = `<p>Forgot Password. Update your Password using <a href='${resetURL}'>Reset Link</a>, if you actually request it. If you did NOT forget it , simply ignore this Email</p>`;
+
+    const sendMailResult = await SendMail(
+      req.body.email,
+      'Password Reset Link',
+      message
+    );
+
+    if (!sendMailResult.response.includes('Ok'))
+      return res.status(HTTPCodes.SERVER_ERROR).json({
+        status: 'failed',
+        message: "Couldn't send email, something went wrong",
+      });
+
+    return res.status(HTTPCodes.OK).json({
+      status: 'success',
+      message: 'Reset Password Email sent successfully to email provided',
+    });
+  },
 };
 
 export default UserController;
