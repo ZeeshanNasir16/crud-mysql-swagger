@@ -1,5 +1,6 @@
 import express from 'express';
 import UserController from '../controlller/UserController.js';
+import { upload } from '../middlewares/multer.js';
 import validationMiddleware from '../middlewares/validationMiddleware.js';
 import {
   addEmployeeSchema,
@@ -47,5 +48,20 @@ UserRouter.patch(
   validationMiddleware(resetPassword),
   UserController.resetPassword
 );
+
+UserRouter.post('/fileUpload', upload.single('image'), (req, res) => {
+  try {
+    res.status(201).json({
+      status: 'success',
+      message: 'File uploaded successfully !',
+    });
+  } catch (er) {
+    console.log('in failed');
+    res.status(500).json({
+      status: 'failed',
+      message: er,
+    });
+  }
+});
 
 export default UserRouter;
