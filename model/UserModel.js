@@ -29,7 +29,6 @@ export const UserModel = {
     query += fieldsToUpdate.join(', ');
     query += ' WHERE id = ?';
     queryParams.push(id);
-    console.log('Final Query', query, queryParams);
     return QueryDB(query, queryParams);
   },
   delete: (id) => QueryDB('Delete from employees where emp_id = ?', [id]),

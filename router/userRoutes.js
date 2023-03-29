@@ -56,7 +56,6 @@ UserRouter.post('/fileUpload', upload.single('image'), (req, res) => {
       message: 'File uploaded successfully !',
     });
   } catch (er) {
-    console.log('in failed');
     res.status(500).json({
       status: 'failed',
       message: er,
